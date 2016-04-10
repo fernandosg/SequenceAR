@@ -138,6 +138,12 @@ Elemento.prototype.calculoOrigen=function(){
 
         
 
+Elemento.prototype.definirBackground=function(color){
+    this.material_frente=new THREE.MeshBasicMaterial({color: color,side: THREE.DoubleSide}); 
+    this.mesh=new THREE.Mesh(this.geometry,this.material_frente);
+    this.elemento_raiz.add(this.mesh);  
+}
+
 Elemento.prototype.definir=function(ruta,objeto){
     parent=this;
     this.textureLoader.load( ruta, function(texture) {
@@ -148,6 +154,7 @@ Elemento.prototype.definir=function(ruta,objeto){
 
     });
 }
+
 
 Elemento.prototype.actualizarMaterialAtras=function(texture2){
     this.textura_atras = texture2.clone();
@@ -563,6 +570,23 @@ Sequence.prototype.init=function(){
   function verificarColision(){
   	mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());  	
   }
+  objetos=[];  
+  var colores=[new THREE.Color("rgb(34, 208, 6)"),new THREE.Color("rgb(25, 11, 228)"),new THREE.Color("rgb(244, 6, 6)"),new THREE.Color("rgb(224, 213, 7)")];
+  limite_renglon=Math.floor(this.cantidad_cartas/2)+1;
+  for(var i=1,cont_fila=1,pos_y=-100,fila_pos=i,pos_x=-200;i<=this.cantidad_cartas;i++,pos_y=((fila_pos>=limite_renglon-1) ? pos_y+120+50 : pos_y) ,fila_pos=((fila_pos>=limite_renglon-1) ? 1 : fila_pos+1),pos_x=(fila_pos==1 ? -200 : (pos_x+113))){     
+    var elemento=new Elemento(120,120,new THREE.PlaneGeometry(120,120));
+    elemento.init();
+    elemento.etiqueta(i);
+    elemento.scale(.7,.7);  
+    elemento.position(new THREE.Vector3(pos_x,pos_y,-600));  
+    elemento.calculoOrigen();
+    objetos.push(elemento);
+    elemento.definirBackground(colores[i]);
+    planoScene.add(elemento.get());
+  }
+
+
+
  
 
   /*

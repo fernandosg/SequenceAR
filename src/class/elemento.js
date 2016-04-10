@@ -43,6 +43,12 @@ Elemento.prototype.calculoOrigen=function(){
 
         
 
+Elemento.prototype.definirBackground=function(color){
+    this.material_frente=new THREE.MeshBasicMaterial({color: color,side: THREE.DoubleSide}); 
+    this.mesh=new THREE.Mesh(this.geometry,this.material_frente);
+    this.elemento_raiz.add(this.mesh);  
+}
+
 Elemento.prototype.definir=function(ruta,objeto){
     parent=this;
     this.textureLoader.load( ruta, function(texture) {
@@ -53,6 +59,7 @@ Elemento.prototype.definir=function(ruta,objeto){
 
     });
 }
+
 
 Elemento.prototype.actualizarMaterialAtras=function(texture2){
     this.textura_atras = texture2.clone();
