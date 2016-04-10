@@ -44,7 +44,8 @@ Elemento.prototype.calculoOrigen=function(){
         
 
 Elemento.prototype.definirBackground=function(color){
-    this.material_frente=new THREE.MeshBasicMaterial({color: color,side: THREE.DoubleSide}); 
+    color_t=new THREE.Color(color);
+    this.material_frente=new THREE.MeshBasicMaterial({color: color_t,side: THREE.DoubleSide}); 
     this.mesh=new THREE.Mesh(this.geometry,this.material_frente);
     this.elemento_raiz.add(this.mesh);  
 }

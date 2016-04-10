@@ -139,7 +139,8 @@ Elemento.prototype.calculoOrigen=function(){
         
 
 Elemento.prototype.definirBackground=function(color){
-    this.material_frente=new THREE.MeshBasicMaterial({color: color,side: THREE.DoubleSide}); 
+    color_t=new THREE.Color(color);
+    this.material_frente=new THREE.MeshBasicMaterial({color: color_t,side: THREE.DoubleSide}); 
     this.mesh=new THREE.Mesh(this.geometry,this.material_frente);
     this.elemento_raiz.add(this.mesh);  
 }
@@ -523,7 +524,7 @@ Sequence.prototype.init=function(){
   var Labels=require("./class/labels");
   var DetectorAR=require("./class/detector");
   var Elemento=require("./class/elemento");
-
+  var pos_elegido=0;
   /*
     MODIFICO LA FUNCION setFromArray DE LA CLASE Matrix4
   */
@@ -571,20 +572,44 @@ Sequence.prototype.init=function(){
   	mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());  	
   }
   objetos=[];  
-  var colores=[new THREE.Color("rgb(34, 208, 6)"),new THREE.Color("rgb(25, 11, 228)"),new THREE.Color("rgb(244, 6, 6)"),new THREE.Color("rgb(224, 213, 7)")];
+  var colores=["rgb(34, 208, 6)","rgb(25, 11, 228)","rgb(244, 6, 6)","rgb(244, 232, 6)"];
   limite_renglon=Math.floor(this.cantidad_cartas/2)+1;
   for(var i=1,cont_fila=1,pos_y=-100,fila_pos=i,pos_x=-200;i<=this.cantidad_cartas;i++,pos_y=((fila_pos>=limite_renglon-1) ? pos_y+120+50 : pos_y) ,fila_pos=((fila_pos>=limite_renglon-1) ? 1 : fila_pos+1),pos_x=(fila_pos==1 ? -200 : (pos_x+113))){     
     var elemento=new Elemento(120,120,new THREE.PlaneGeometry(120,120));
     elemento.init();
-    elemento.etiqueta(i);
+    elemento.etiqueta(colores[i-1]);
     elemento.scale(.7,.7);  
     elemento.position(new THREE.Vector3(pos_x,pos_y,-600));  
     elemento.calculoOrigen();
     objetos.push(elemento);
-    elemento.definirBackground(colores[i]);
+    elemento.definirBackground(colores[i-1]);
     planoScene.add(elemento.get());
+    console.log("color "+colores[i-1]);
   }
 
+  function aleatorio(){    
+    return Math.floor(Math.random() * ((objetos.length-1) - 0 + 1)) + 0;
+  }
+
+  pos_elegido=aleatorio();
+  document.getElementById("colorSelect").style.backgroundColor=colores[pos_elegido];
+  var mano=new Elemento(120,120,new THREE.PlaneGeometry(120,120));
+  mano.init();
+  mano.etiqueta("Detector");
+  mano.definirBackground("0xffffff");
+  objeto=new THREE.Object3D();
+  objeto.add(mano.get());
+  objeto.position.z=-1;
+  objeto.matrixAutoUpdate = false;
+  realidadScene.add(objeto);
+
+  canvas=document.createElement("canvas");
+  canvas.width=WIDTH_CANVAS;
+  canvas.height=HEIGHT_CANVAS;
+  ctx=canvas.getContext("2d");
+  detector_ar=DetectorAR(canvas);
+  detector_ar.init();
+  detector_ar.setCameraMatrix(realidadCamera);
 
 
  
@@ -602,12 +627,27 @@ Sequence.prototype.init=function(){
   	renderer.render( realidadScene, realidadCamera );
   }
 
+  function verificarColision(){    
+    mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());
+    console.log(pos_elegido);
+    if(objetos[pos_elegido].colisiona(objeto)){
+      console.log("colisiona");
+      pos_elegido=aleatorio();
+      document.getElementById("colorSelect").style.backgroundColor=colores[pos_elegido];
+    }
+  }
+
   /*
     FUNCION DE ANIMACION
 
   */
   function loop(){  	    
     camara3d.children[0].material.map.needsUpdate=true;
+    ctx.drawImage(video.video,0,0);
+    canvas.changed=true;
+    if(detector_ar.markerToObject(objeto)){
+      verificarColision();
+    }
   	rendering();
   	requestAnimationFrame(loop);  	
   }
