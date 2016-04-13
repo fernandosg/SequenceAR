@@ -20,13 +20,23 @@
 	<input type="range" id="distancia" value="0"/>
 	<section id="container" style="width:1000px; height:600px;">
 		<div id="ra" style="display:inline-block;"></div>
-		<aside id="informacion" style="display:inline-block; vertical-align:top;">
+		<aside id="informacion" style="display:inline-block; vertical-align:top; width:300px;">
 			<div id="objetos"></div>
 			<div id="mano">
-				<span>Posicion de la mano</span><br>
-				<span style="color:red;">Posicion X </span><span id="pos_x_mano"></span><br>					
-				<span style="color:red;">Posicion Y </span><span id="pos_y_mano"></span><br>				
-				<span style="color:red;">Posicion Z </span><span id="pos_z_mano"></span><br>
+				<h2>Posicion de la mano</h2>
+				<b style="color:red;">Posicion X </b><span id="x"></span><br>					
+				<b style="color:red;">Posicionb Y </b><span id="y"></span><br>				
+				<b style="color:red;">Posicion Z </b><span id="z"></span><br>
+			</div>
+			<div id="objetivo">
+				<h2>Posicion del objetivo</h2>
+				<b style="color:red;">Posicion X </b><span id="x"></span><br>					
+				<b style="color:red;">Posicion Y </b><span id="y"></span><br>				
+				<b style="color:red;">Posicion Z </b><span id="z"></span><br>
+			</div>
+			<div>
+				<h2>La distancia entre el objetivo y la mano es de </h2>
+				<b style="color:red" id="distancia_text"></b>
 			</div>
 		</aside>		
 	</section>

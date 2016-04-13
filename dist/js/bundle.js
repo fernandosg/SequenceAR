@@ -252,14 +252,16 @@ Elemento.prototype.actualizar=function(){
 
        
 
-Elemento.prototype.colisiona=function(mano){
+Elemento.prototype.colisiona=function(mano,callback){
     box_mano=new THREE.Box3().setFromObject(mano);
     box_carta=new THREE.Box3().setFromObject(this.mesh);
     medidas=box_mano.max.clone();//box_mano.center().clone();
     medidas.z=(medidas.z*-1);
     medidas.x=medidas.x-box_mano.size().x*(3/4);
     medidas.y=medidas.y-box_mano.size().y*(3/4);
-    return box_carta.center().distanceTo(medidas)<=63;
+    distancia=box_carta.center().distanceTo(medidas);
+    callback(distancia);
+    return distancia<=63;
 }
 
 Elemento.prototype.getGradosActual=function(){
@@ -573,18 +575,19 @@ Sequence.prototype.init=function(){
   }
   objetos=[];  
   var colores=["rgb(34, 208, 6)","rgb(25, 11, 228)","rgb(244, 6, 6)","rgb(244, 232, 6)"];
+  tamano_elemento=120;
   limite_renglon=Math.floor(this.cantidad_cartas/2)+1;
-  for(var i=1,cont_fila=1,pos_y=-100,fila_pos=i,pos_x=-200;i<=this.cantidad_cartas;i++,pos_y=((fila_pos>=limite_renglon-1) ? pos_y+120+50 : pos_y) ,fila_pos=((fila_pos>=limite_renglon-1) ? 1 : fila_pos+1),pos_x=(fila_pos==1 ? -200 : (pos_x+113))){     
-    var elemento=new Elemento(120,120,new THREE.PlaneGeometry(120,120));
+  margenes_espacio=(WIDTH_CANVAS-(tamano_elemento*limite_renglon))/limite_renglon;
+  console.log("margenes espacio "+margenes_espacio+" "+WIDTH_CANVAS+" "+tamano_elemento+" "+this.cantidad_cartas);
+  for(var i=1,cont_fila=1,pos_y=-100,fila_pos=i,pos_x=-200;i<=this.cantidad_cartas;i++,pos_y=((fila_pos>=limite_renglon-1) ? pos_y+120+50 : pos_y) ,fila_pos=((fila_pos>=limite_renglon-1) ? 1 : fila_pos+1),pos_x=(fila_pos==1 ? -200 : (pos_x+margenes_espacio+tamano_elemento))){     
+    var elemento=new Elemento(tamano_elemento,tamano_elemento,new THREE.PlaneGeometry(tamano_elemento,tamano_elemento));
     elemento.init();
     elemento.etiqueta(colores[i-1]);
-    elemento.scale(.7,.7);  
     elemento.position(new THREE.Vector3(pos_x,pos_y,-600));  
     elemento.calculoOrigen();
     objetos.push(elemento);
     elemento.definirBackground(colores[i-1]);
     planoScene.add(elemento.get());
-    console.log("color "+colores[i-1]);
   }
 
   function aleatorio(){    
@@ -627,11 +630,25 @@ Sequence.prototype.init=function(){
   	renderer.render( realidadScene, realidadCamera );
   }
 
+  function actualizarPosicionMano(posicion){
+
+  }
+
+  function mostrarPosicion(posicion,elemento){
+    document.getElementById(elemento).getElementsByTagName("span")[0].innerHTML=posicion.x;
+    document.getElementById(elemento).getElementsByTagName("span")[1].innerHTML=posicion.y;
+    document.getElementById(elemento).getElementsByTagName("span")[2].innerHTML=posicion.z;
+  }
+
+  function distancia(distancia){
+    document.getElementById("distancia_text").innerHTML=distancia;
+  }
+
   function verificarColision(){    
-    mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());
-    console.log(pos_elegido);
-    if(objetos[pos_elegido].colisiona(objeto)){
-      console.log("colisiona");
+    mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());    
+    mostrarPosicion(objeto.getWorldPosition(),"mano");    
+    mostrarPosicion(objetos[pos_elegido].get().position,"objetivo");
+    if(objetos[pos_elegido].colisiona(objeto,distancia)){
       pos_elegido=aleatorio();
       document.getElementById("colorSelect").style.backgroundColor=colores[pos_elegido];
     }

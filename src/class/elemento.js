@@ -157,14 +157,16 @@ Elemento.prototype.actualizar=function(){
 
        
 
-Elemento.prototype.colisiona=function(mano){
+Elemento.prototype.colisiona=function(mano,callback){
     box_mano=new THREE.Box3().setFromObject(mano);
     box_carta=new THREE.Box3().setFromObject(this.mesh);
     medidas=box_mano.max.clone();//box_mano.center().clone();
     medidas.z=(medidas.z*-1);
     medidas.x=medidas.x-box_mano.size().x*(3/4);
     medidas.y=medidas.y-box_mano.size().y*(3/4);
-    return box_carta.center().distanceTo(medidas)<=63;
+    distancia=box_carta.center().distanceTo(medidas);
+    callback(distancia);
+    return distancia<=63;
 }
 
 Elemento.prototype.getGradosActual=function(){
