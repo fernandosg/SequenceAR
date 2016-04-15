@@ -7,7 +7,7 @@ module.exports=function(canvas_element){
             detector = new FLARMultiIdMarkerDetector(JSARParameters, 40);
             result = new Float32Array(16);
             detector.setContinueMode(true);
-            JSARParameters.copyCameraMatrix(result, 10, 1000);        
+            JSARParameters.copyCameraMatrix(result, .1, 2000);        
             THREE.Object3D.prototype.transformFromArray = function(m) {
                 this.matrix.setFromArray(m);
                 this.matrixWorldNeedsUpdate = true;
@@ -37,11 +37,11 @@ module.exports=function(canvas_element){
             detector.getTransformMatrix(idx, mat);
 
             var cm = new Float32Array(16);
-            cm[0] = mat.m00;
+            cm[0] = mat.m00*-1;
             cm[1] = -mat.m10;
             cm[2] = mat.m20;
             cm[3] = 0;
-            cm[4] = mat.m01;
+            cm[4] = mat.m01*-1;
             cm[5] = -mat.m11;
             cm[6] = mat.m21;
             cm[7] = 0;
@@ -49,7 +49,7 @@ module.exports=function(canvas_element){
             cm[9] = mat.m12;
             cm[10] = -mat.m22;
             cm[11] = 0;
-            cm[12] = mat.m03;
+            cm[12] = mat.m03*-1;
             cm[13] = -mat.m13;
             cm[14] = mat.m23;
             cm[15] = 1;

@@ -14,7 +14,7 @@ module.exports=function(canvas_element){
             detector = new FLARMultiIdMarkerDetector(JSARParameters, 40);
             result = new Float32Array(16);
             detector.setContinueMode(true);
-            JSARParameters.copyCameraMatrix(result, 10, 1000);        
+            JSARParameters.copyCameraMatrix(result, .1, 2000);        
             THREE.Object3D.prototype.transformFromArray = function(m) {
                 this.matrix.setFromArray(m);
                 this.matrixWorldNeedsUpdate = true;
@@ -44,11 +44,11 @@ module.exports=function(canvas_element){
             detector.getTransformMatrix(idx, mat);
 
             var cm = new Float32Array(16);
-            cm[0] = mat.m00;
+            cm[0] = mat.m00*-1;
             cm[1] = -mat.m10;
             cm[2] = mat.m20;
             cm[3] = 0;
-            cm[4] = mat.m01;
+            cm[4] = mat.m01*-1;
             cm[5] = -mat.m11;
             cm[6] = mat.m21;
             cm[7] = 0;
@@ -56,7 +56,7 @@ module.exports=function(canvas_element){
             cm[9] = mat.m12;
             cm[10] = -mat.m22;
             cm[11] = 0;
-            cm[12] = mat.m03;
+            cm[12] = mat.m03*-1;
             cm[13] = -mat.m13;
             cm[14] = mat.m23;
             cm[15] = 1;
@@ -542,7 +542,9 @@ Sequence.prototype.init=function(){
   var WIDTH_CANVAS=600,HEIGHT_CANVAS=480;
   var videoCamera=new THREE.Camera();
   var realidadCamera=new THREE.Camera();
-  var planoCamera=new THREE.PerspectiveCamera(40,WIDTH_CANVAS/HEIGHT_CANVAS,0.1,2000);//THREE.Camera();
+  var planoCamera=new THREE.PerspectiveCamera();//THREE.Camera();
+  planoCamera.near=0.1;
+  planoCamera.far=2000;
   //webglAvailable();
   var renderer = new THREE.WebGLRenderer();
   planoCamera.lookAt(planoScene.position);
@@ -552,33 +554,27 @@ Sequence.prototype.init=function(){
 
 
 
+  canvas=document.createElement("canvas");
+  canvas.width=WIDTH_CANVAS;
+  canvas.height=HEIGHT_CANVAS;
   var video=new THREEx.WebcamTexture(WIDTH_CANVAS,HEIGHT_CANVAS);
-  videoTexture=video.texture;
+  videoTexture=new THREE.Texture(canvas);
   videoTexture.minFilter = THREE.LinearFilter;
   videoTexture.magFilter = THREE.LinearFilter;
   movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, depthTest: false, depthWrite: false} );//new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );			
   var movieGeometry = new THREE.PlaneGeometry(2,2,0.0);
   movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
-  camara3d=new THREE.Object3D();
-  camara3d.position.z=-1;
-  camara3d.add(movieScreen);
-  camara3d.children[0].material.map.needsUpdate=true;
-  videoScene.add(camara3d);	
-  var markerRoot=new THREE.Object3D();
-  markerRoot.matrixAutoUpdate = false;
-  var geometry = new THREE.PlaneGeometry( 100, 100, 100 );
-  var material = new THREE.MeshBasicMaterial({color:0xcccccc
-  });
- 
+  movieScreen.scale.x=-1;
+  movieScreen.material.side = THREE.DoubleSide;
+  videoScene.add(movieScreen);	
   function verificarColision(){
-  	mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());  	
+  	mano_obj.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());  	
   }
   objetos=[];  
   var colores=["rgb(34, 208, 6)","rgb(25, 11, 228)","rgb(244, 6, 6)","rgb(244, 232, 6)"];
   tamano_elemento=120;
   limite_renglon=Math.floor(this.cantidad_cartas/2)+1;
   margenes_espacio=(WIDTH_CANVAS-(tamano_elemento*limite_renglon))/limite_renglon;
-  console.log("margenes espacio "+margenes_espacio+" "+WIDTH_CANVAS+" "+tamano_elemento+" "+this.cantidad_cartas);
   for(var i=1,cont_fila=1,pos_y=-100,fila_pos=i,pos_x=-200;i<=this.cantidad_cartas;i++,pos_y=((fila_pos>=limite_renglon-1) ? pos_y+120+50 : pos_y) ,fila_pos=((fila_pos>=limite_renglon-1) ? 1 : fila_pos+1),pos_x=(fila_pos==1 ? -200 : (pos_x+margenes_espacio+tamano_elemento))){     
     var elemento=new Elemento(tamano_elemento,tamano_elemento,new THREE.PlaneGeometry(tamano_elemento,tamano_elemento));
     elemento.init();
@@ -596,19 +592,16 @@ Sequence.prototype.init=function(){
 
   pos_elegido=aleatorio();
   document.getElementById("colorSelect").style.backgroundColor=colores[pos_elegido];
-  var mano=new Elemento(120,120,new THREE.PlaneGeometry(120,120));
-  mano.init();
-  mano.etiqueta("Detector");
-  mano.definirBackground("0xffffff");
+  mano_obj=new Elemento(30,30,new THREE.PlaneGeometry(30,30));
+  mano_obj.init();
+  mano_obj.etiqueta("Detector");
+  mano_obj.definirBackground("0xffffff");
   objeto=new THREE.Object3D();
-  objeto.add(mano.get());
+  objeto.add(mano_obj.get());
   objeto.position.z=-1;
   objeto.matrixAutoUpdate = false;
   realidadScene.add(objeto);
 
-  canvas=document.createElement("canvas");
-  canvas.width=WIDTH_CANVAS;
-  canvas.height=HEIGHT_CANVAS;
   ctx=canvas.getContext("2d");
   detector_ar=DetectorAR(canvas);
   detector_ar.init();
@@ -645,7 +638,7 @@ Sequence.prototype.init=function(){
   }
 
   function verificarColision(){    
-    mano.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());    
+    mano_obj.actualizarPosicionesYescala(objeto.getWorldPosition(),objeto.getWorldScale());    
     mostrarPosicion(objeto.getWorldPosition(),"mano");    
     mostrarPosicion(objetos[pos_elegido].get().position,"objetivo");
     if(objetos[pos_elegido].colisiona(objeto,distancia)){
@@ -659,8 +652,8 @@ Sequence.prototype.init=function(){
 
   */
   function loop(){  	    
-    camara3d.children[0].material.map.needsUpdate=true;
-    ctx.drawImage(video.video,0,0);
+    movieScreen.material.map.needsUpdate=true;
+    ctx.drawImage(video.video,0,0,WIDTH_CANVAS,HEIGHT_CANVAS);
     canvas.changed=true;
     if(detector_ar.markerToObject(objeto)){
       verificarColision();
